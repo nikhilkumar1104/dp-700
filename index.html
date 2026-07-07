@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Unofficial DP-700 Certification Practice Simulator built with HTML, CSS, and vanilla JavaScript." />
+  <title>DP-700 Certification Practice Simulator</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">DP</div>
+        <div>
+          <h1>DP-700 Certification Practice Simulator</h1>
+          <p>Unofficial enterprise-style practice platform</p>
+        </div>
+      </div>
+      <nav class="top-actions" aria-label="Main navigation">
+        <button class="ghost-btn" data-route="landing">Home</button>
+        <button class="ghost-btn" data-route="dashboard">Dashboard</button>
+        <button class="ghost-btn" data-route="admin">Admin</button>
+        <button class="theme-toggle" id="contrastToggle" title="Toggle high contrast">High Contrast</button>
+      </nav>
+    </header>
+
+    <main>
+      <section id="landing" class="screen active" aria-labelledby="landing-title">
+        <div class="hero-grid">
+          <div class="hero-card">
+            <span class="eyebrow">Certification practice simulator</span>
+            <h2 id="landing-title">Practice DP-700 in a realistic exam environment</h2>
+            <p class="hero-copy">
+              Build confidence with original scenario-based questions covering data ingestion,
+              transformation, analytics solution management, monitoring, optimization, security,
+              and governance concepts.
+            </p>
+            <div class="disclaimer">
+              This is an unofficial practice simulator and is not affiliated with Microsoft.
+            </div>
+            <div class="hero-actions">
+              <button class="primary-btn" id="startPrepBtn">Start Exam</button>
+              <button class="secondary-btn" data-route="dashboard">View Dashboard</button>
+            </div>
+          </div>
+
+          <aside class="exam-facts" aria-label="Exam summary">
+            <div class="fact-card">
+              <strong>Duration</strong>
+              <span>120 minutes</span>
+            </div>
+            <div class="fact-card">
+              <strong>Questions</strong>
+              <span>50 per mock exam</span>
+            </div>
+            <div class="fact-card">
+              <strong>Difficulty</strong>
+              <span>Mixed: Foundation to Expert</span>
+            </div>
+            <div class="fact-card">
+              <strong>Question bank</strong>
+              <span id="bankCount">Generating...</span>
+            </div>
+          </aside>
+        </div>
+
+        <div class="content-panel">
+          <div class="section-heading">
+            <span>Skills measured</span>
+            <h3>Practice coverage</h3>
+          </div>
+          <div class="skills-grid">
+            <article>
+              <h4>Implement Data Ingestion</h4>
+              <p>Data Factory, Dataflows Gen2, pipelines, incremental loads, source connections.</p>
+            </article>
+            <article>
+              <h4>Transform Data</h4>
+              <p>Notebooks, Spark, data preparation, transformations, validation, error handling.</p>
+            </article>
+            <article>
+              <h4>Analytics Solutions</h4>
+              <p>Lakehouse, Warehouse, Delta tables, semantic readiness, optimization patterns.</p>
+            </article>
+            <article>
+              <h4>Monitor, Optimize, Secure</h4>
+              <p>Pipeline monitoring, logging, performance tuning, RBAC, workspace permissions.</p>
+            </article>
+          </div>
+        </div>
+
+        <div class="content-panel">
+          <div class="section-heading">
+            <span>Practice modes</span>
+            <h3>Select a training path</h3>
+          </div>
+          <div class="mode-grid">
+            <button class="mode-card" data-mode="mock"><strong>Full Mock Exam</strong><span>50 questions, 120 minutes</span></button>
+            <button class="mode-card" data-mode="topic"><strong>Topic Practice</strong><span>Pick one skill area</span></button>
+            <button class="mode-card" data-mode="timed"><strong>Timed Quiz</strong><span>20 questions, 30 minutes</span></button>
+            <button class="mode-card" data-mode="adaptive"><strong>Adaptive Practice</strong><span>Mixed difficulty</span></button>
+            <button class="mode-card" data-mode="weak"><strong>Weak Area Training</strong><span>Focus on missed topics</span></button>
+            <button class="mode-card" data-mode="final"><strong>Final Readiness</strong><span>Exam-like checkpoint</span></button>
+          </div>
+        </div>
+      </section>
+
+      <section id="instructions" class="screen" aria-labelledby="instructions-title">
+        <div class="narrow-panel">
+          <span class="eyebrow">Pre-exam instructions</span>
+          <h2 id="instructions-title">Read the rules before starting</h2>
+          <div class="instruction-list">
+            <div><strong>Time limit:</strong> The default full mock exam is 120 minutes. Timed quiz mode uses 30 minutes.</div>
+            <div><strong>Navigation:</strong> You can move forward and backward between questions using the buttons or question navigator.</div>
+            <div><strong>Auto-save:</strong> Answers are saved locally every 10 seconds and after every selection.</div>
+            <div><strong>Review:</strong> Use Mark for Review to revisit uncertain questions before submission.</div>
+            <div><strong>Question types:</strong> Single choice, multiple choice, case study, scenario analysis, matching, ordering, architecture, pipeline design, and troubleshooting.</div>
+            <div><strong>Integrity:</strong> Browser focus changes are logged as practice integrity events.</div>
+            <div><strong>Locked exam flow:</strong> After starting, you must finish using the Submit Exam button before using Home, Dashboard, Admin, or browser navigation.</div>
+            <div><strong>Practice feedback:</strong> Use Check My Answer to see whether your current answer is correct and why each option is right or wrong.</div>
+          </div>
+
+          <label class="agreement">
+            <input type="checkbox" id="agreementCheckbox" />
+            <span>I understand this is an unofficial practice tool and I agree to start the exam.</span>
+          </label>
+
+          <div class="form-row">
+            <label>
+              Candidate Name
+              <input id="candidateName" type="text" value="Nikhil Kumar" />
+            </label>
+            <label>
+              Practice Mode
+              <select id="modeSelect">
+                <option value="mock">Full Mock Exam</option>
+                <option value="topic">Topic Practice</option>
+                <option value="timed">Timed Quiz</option>
+                <option value="adaptive">Adaptive Practice</option>
+                <option value="weak">Weak Area Training</option>
+                <option value="final">Final Readiness Assessment</option>
+              </select>
+            </label>
+            <label>
+              Topic Filter
+              <select id="topicSelect">
+                <option value="all">All Topics</option>
+                <option value="Implement Data Ingestion">Implement Data Ingestion</option>
+                <option value="Transform Data">Transform Data</option>
+                <option value="Implement and Manage Analytics Solutions">Implement and Manage Analytics Solutions</option>
+                <option value="Monitor and Optimize">Monitor and Optimize</option>
+                <option value="Security and Governance">Security and Governance</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="instruction-actions">
+            <button class="secondary-btn" data-route="landing">Back</button>
+            <button class="primary-btn" id="beginExamBtn" disabled>Begin Exam</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="exam" class="screen exam-screen" aria-label="Exam interface">
+        <div class="exam-layout">
+          <aside class="candidate-panel">
+            <div class="candidate-card">
+              <span class="avatar" id="candidateInitials">NK</span>
+              <div>
+                <strong id="examCandidateName">Nikhil Kumar</strong>
+                <span>Candidate ID: DP700-PRACTICE</span>
+              </div>
+            </div>
+
+            <div class="timer-card" aria-live="polite">
+              <span>Time Remaining</span>
+              <strong id="timerDisplay">02:00:00</strong>
+              <small id="timerWarning">Exam in progress</small>
+            </div>
+
+            <div class="progress-card">
+              <div class="progress-label"><span>Progress</span><strong id="progressText">0 / 50</strong></div>
+              <div class="progress-track"><div id="progressBar" class="progress-fill"></div></div>
+            </div>
+
+            <div class="legend">
+              <span><i class="status-dot answered"></i>Answered</span>
+              <span><i class="status-dot marked"></i>Review</span>
+              <span><i class="status-dot current"></i>Current</span>
+              <span><i class="status-dot unseen"></i>Unseen</span>
+            </div>
+
+            <div id="questionNavigator" class="question-nav" aria-label="Question navigator"></div>
+
+            <div class="side-actions">
+              <button class="secondary-btn full" id="fullscreenBtn">Fullscreen</button>
+              <button class="danger-btn full" id="submitExamBtn">Submit Exam</button>
+            </div>
+          </aside>
+
+          <section class="question-panel" aria-live="polite">
+            <div class="question-toolbar">
+              <div>
+                <span id="questionTypeBadge" class="badge">Single Choice</span>
+                <span id="difficultyBadge" class="badge muted">Intermediate</span>
+                <span id="topicBadge" class="badge muted">Data Ingestion</span>
+              </div>
+              <div class="autosave-state">
+                <span id="focusLog">Focus events: 0</span>
+                <span id="saveIndicator">Saved</span>
+              </div>
+            </div>
+
+            <article class="question-card">
+              <div class="question-meta">
+                <strong id="questionNumberText">Question 1 of 50</strong>
+                <span id="estimatedTimeText">Estimated time: 2 min</span>
+              </div>
+              <h2 id="questionTitle">Question title</h2>
+              <p id="questionText">Question text appears here.</p>
+              <div id="caseStudyBox" class="case-study-box hidden"></div>
+              <div id="answerArea" class="answer-area"></div>
+              <div id="checkAnswerPanel" class="check-answer-panel hidden" aria-live="polite"></div>
+            </article>
+
+            <div class="exam-actions">
+              <button class="secondary-btn" id="prevQuestionBtn">Previous</button>
+              <button class="review-btn" id="markReviewBtn">Mark for Review</button>
+              <button class="secondary-btn" id="checkAnswerBtn">Check My Answer</button>
+              <button class="primary-btn" id="nextQuestionBtn">Next</button>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section id="results" class="screen" aria-labelledby="results-title">
+        <div class="results-grid">
+          <div class="score-card large">
+            <span class="eyebrow">Exam summary</span>
+            <h2 id="results-title">Your DP-700 practice result</h2>
+            <div class="score-ring" id="scoreRing"><span id="scorePercent">0%</span></div>
+            <p id="readinessText">Readiness estimate will appear here.</p>
+            <div class="result-actions">
+              <button class="primary-btn" id="reviewAnswersBtn">Review Answers</button>
+              <button class="secondary-btn" id="retakeExamBtn">Retake Exam</button>
+            </div>
+          </div>
+
+          <div class="analytics-panel">
+            <h3>Performance analytics</h3>
+            <div class="metric-grid">
+              <div><span>Total Score</span><strong id="totalScoreMetric">0 / 0</strong></div>
+              <div><span>Time Used</span><strong id="timeUsedMetric">0 min</strong></div>
+              <div><span>Avg Response</span><strong id="avgTimeMetric">0 sec</strong></div>
+              <div><span>Marked Review</span><strong id="reviewMetric">0</strong></div>
+            </div>
+            <canvas id="topicChart" width="500" height="260" aria-label="Topic performance chart"></canvas>
+          </div>
+        </div>
+
+        <div class="content-panel">
+          <div class="section-heading">
+            <span>Study plan</span>
+            <h3>Recommendations</h3>
+          </div>
+          <div id="recommendations" class="recommendation-list"></div>
+        </div>
+      </section>
+
+      <section id="review" class="screen" aria-labelledby="review-title">
+        <div class="review-header">
+          <div>
+            <span class="eyebrow">Review mode</span>
+            <h2 id="review-title">Question review</h2>
+          </div>
+          <div class="review-filters">
+            <button class="secondary-btn active" data-filter="all">All</button>
+            <button class="secondary-btn" data-filter="incorrect">Incorrect</button>
+            <button class="secondary-btn" data-filter="marked">Marked</button>
+            <button class="secondary-btn" data-filter="bookmarked">Bookmarked</button>
+          </div>
+        </div>
+        <div id="reviewList" class="review-list"></div>
+      </section>
+
+      <section id="dashboard" class="screen" aria-labelledby="dashboard-title">
+        <div class="dashboard-header">
+          <div>
+            <span class="eyebrow">Candidate dashboard</span>
+            <h2 id="dashboard-title">Practice history and trends</h2>
+          </div>
+          <button class="primary-btn" data-route="instructions">Start New Practice</button>
+        </div>
+
+        <div class="metric-grid dashboard-metrics">
+          <div><span>Attempts</span><strong id="attemptsMetric">0</strong></div>
+          <div><span>Best Score</span><strong id="bestScoreMetric">0%</strong></div>
+          <div><span>Study Streak</span><strong id="streakMetric">0 days</strong></div>
+          <div><span>Bookmarked</span><strong id="bookmarkMetric">0</strong></div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="analytics-panel">
+            <h3>Progress trend</h3>
+            <canvas id="trendChart" width="500" height="260"></canvas>
+          </div>
+          <div class="analytics-panel">
+            <h3>Topic proficiency</h3>
+            <div id="topicBars" class="topic-bars"></div>
+          </div>
+        </div>
+
+        <div class="content-panel">
+          <div class="section-heading">
+            <span>History</span>
+            <h3>Past attempts</h3>
+          </div>
+          <div id="historyTable" class="history-table"></div>
+        </div>
+      </section>
+
+      <section id="admin" class="screen" aria-labelledby="admin-title">
+        <div class="dashboard-header">
+          <div>
+            <span class="eyebrow">Admin portal</span>
+            <h2 id="admin-title">Question bank and system analytics</h2>
+          </div>
+          <button class="primary-btn" id="regenerateBankBtn">Regenerate Question Bank</button>
+        </div>
+
+        <div class="metric-grid dashboard-metrics">
+          <div><span>Questions</span><strong id="adminQuestionCount">0</strong></div>
+          <div><span>Users</span><strong>1 demo</strong></div>
+          <div><span>Exam Templates</span><strong>6</strong></div>
+          <div><span>Activity Logs</span><strong id="activityMetric">0</strong></div>
+        </div>
+
+        <div class="content-panel">
+          <div class="section-heading">
+            <span>Question bank preview</span>
+            <h3>Generated original questions</h3>
+          </div>
+          <div class="table-actions">
+            <input id="adminSearch" type="search" placeholder="Search questions, topics, difficulty..." />
+          </div>
+          <div id="adminQuestionTable" class="history-table"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="js/questions.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
