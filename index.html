@@ -1,78 +1,152 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>DP-700 Extreme Coding Exam</title>
-<style>
-:root{--b:#f4f6fb;--c:#fff;--t:#172033;--m:#667085;--p:#5b3fd1;--g:#157347;--r:#b42318;--l:#d9e0ec}
-*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif;background:var(--b);color:var(--t)}
-header{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--l);padding:14px 24px;display:flex;justify-content:space-between;align-items:center}
-.wrap{max-width:1180px;margin:28px auto;padding:0 16px}.card{background:var(--c);border:1px solid var(--l);border-radius:18px;padding:24px;box-shadow:0 10px 35px #1f2a4412}
-.grid{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:20px}.pill{display:inline-block;padding:5px 10px;border-radius:999px;background:#eeeaff;color:var(--p);font-size:12px;font-weight:800;margin-right:6px}
-.muted{color:var(--m)}pre{overflow:auto;background:#111827;color:#e5e7eb;padding:16px;border-radius:12px;line-height:1.5}
-.option{display:block;border:2px solid var(--l);border-radius:12px;padding:14px;margin:10px 0;cursor:pointer}.option.selected{border-color:var(--p);background:#f0ecff}
-.btn{border:0;border-radius:10px;padding:11px 16px;font-weight:800;cursor:pointer}.primary{background:var(--p);color:#fff}.secondary{background:#fff;border:1px solid var(--l)}
-.nav{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.nav button{aspect-ratio:1;border:1px solid var(--l);border-radius:8px;background:#f8fafc}.nav button.done{background:var(--p);color:#fff}.nav button.now{outline:3px solid #a99af0}
-.actions{display:flex;justify-content:space-between;gap:10px;margin-top:22px}.drop-row{display:grid;grid-template-columns:180px 1fr;gap:12px;align-items:center;margin:12px 0}.drop-row select{padding:10px;border:1px solid var(--l);border-radius:9px;width:100%}
-.result{margin-top:18px;padding:15px;border-radius:12px}.good{background:#eaf7ef;color:#0d5d36}.bad{background:#fff0f0;color:#8a1c13}.hidden{display:none}.timer{font-variant-numeric:tabular-nums;font-weight:900}
-.intro{text-align:center;padding:52px 24px}.intro h1{font-size:clamp(34px,6vw,64px);margin:8px}.order-item{display:flex;justify-content:space-between;gap:8px;border:1px solid var(--l);border-radius:10px;padding:12px;margin:8px 0;background:#fff}
-@media(max-width:850px){.grid{grid-template-columns:1fr}.sidebar{order:-1}.drop-row{grid-template-columns:1fr}header{padding:10px 12px}.wrap{margin:14px auto}}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="DP-700 expert practice simulator with a no-repeat question engine.">
+  <title>DP-700 Unique Expert Simulator</title>
+  <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-<header><strong>DP-700 Extreme Coding Mode</strong><span class="timer" id="timer">02:00:00</span></header>
-<div class="wrap">
-<section id="start" class="card intro"><span class="pill">Maximum difficulty</span><h1>DP-700 Coding Exam Simulator</h1><p class="muted">60 randomized questions: PySpark, KQL, T-SQL, Delta Lake, pipelines, optimization, code completion, select-two, dropdown and ordering.</p><button class="btn primary" onclick="startExam()">Start 60-question exam</button></section>
-<section id="exam" class="hidden grid"><main class="card"><div id="meta"></div><h2 id="prompt"></h2><div id="code"></div><div id="answers"></div><div id="feedback"></div><div class="actions"><button class="btn secondary" onclick="move(-1)">Previous</button><div><button class="btn secondary" onclick="check()">Check answer</button> <button class="btn primary" onclick="move(1)">Next</button></div></div></main><aside class="card sidebar"><strong>Question navigator</strong><p class="muted" id="progress"></p><div class="nav" id="nav"></div><hr><button class="btn primary" style="width:100%" onclick="submitExam()">Submit exam</button></aside></section>
-<section id="results" class="card hidden"></section>
-</div>
-<script>
-const base=[
-{topic:'PySpark',type:'single',p:'A 3-TB fact DataFrame is joined to a 9-MB dimension. Which change most directly minimizes shuffle?',code:`result = fact.join(dim, "ProductID")`,o:['Broadcast dim before the join','Cache fact before the join','Coalesce fact to one partition','Collect fact to the driver'],a:[0],e:'Broadcasting the small dimension avoids shuffling the large fact side.'},
-{topic:'PySpark',type:'multi',select:2,p:'A join has one extremely hot CustomerID and several straggler tasks. Which two techniques directly address the skew?',o:['Enable AQE skew join handling','Salt the hot key','Cache the final result only','Run VACUUM','Increase Power BI refresh frequency'],a:[0,1],e:'AQE and key salting redistribute skewed work.'},
-{topic:'KQL',type:'dropdown',p:'Complete the query to return the latest warning event per device from the last 30 minutes.',code:`Telemetry
-| where Timestamp > [1]
-| extend P = [2](Payload)
-| where tostring(P.status) == "Warning"
-| summarize [3](Timestamp, *) by DeviceId`,drops:[{l:'[1]',o:['ago(30m)','now(30m)','bin(Timestamp,30m)','datetime(30m)'],a:0},{l:'[2]',o:['parse_json','extract_all','project','summarize'],a:0},{l:'[3]',o:['arg_max','max','top','latest'],a:0}],e:'ago filters the time window, parse_json reads dynamic JSON, and arg_max returns the entire latest row.'},
-{topic:'KQL',type:'single',p:'Which query returns hourly average temperature per device for the last day?',o:[`Telemetry | where Timestamp > ago(1d) | summarize AvgTemp=avg(Temperature) by DeviceId, bin(Timestamp,1h)`,`Telemetry | project avg(Temperature) by DeviceId`,`Telemetry | summarize arg_max(Temperature,*) by 1h`,`Telemetry | where bin(Timestamp,1h) | average Temperature`],a:[0],e:'Use where, summarize, and bin for time-series aggregation.'},
-{topic:'T-SQL',type:'dropdown',p:'Complete an idempotent incremental load into dbo.Sales.',code:`MERGE dbo.Sales AS T
-USING dbo.StageSales AS S
-ON [1]
-WHEN MATCHED AND T.RowHash <> S.RowHash THEN [2]
-WHEN NOT MATCHED THEN [3];`,drops:[{l:'[1]',o:['T.SalesID = S.SalesID','T.SalesID <> S.SalesID','T.RowHash = NULL','1 = 0'],a:0},{l:'[2]',o:['UPDATE SET T.Amount=S.Amount,T.RowHash=S.RowHash','DELETE','INSERT VALUES(S.SalesID)','TRUNCATE TABLE dbo.Sales'],a:0},{l:'[3]',o:['INSERT (SalesID,Amount,RowHash) VALUES(S.SalesID,S.Amount,S.RowHash)','UPDATE SET T.SalesID=S.SalesID','DELETE','RETURN'],a:0}],e:'MERGE matches the business key, updates changed rows, and inserts new rows.'},
-{topic:'Delta Lake',type:'single',p:'A Delta table has thousands of tiny active files. Storage cleanup is not required. What should you run?',o:['OPTIMIZE','VACUUM','RESTORE','DESCRIBE HISTORY'],a:[0],e:'OPTIMIZE compacts active small files; VACUUM only removes obsolete unreferenced files.'},
-{topic:'Delta Lake',type:'multi',select:2,p:'Which two statements about VACUUM are correct?',o:['It removes obsolete files after retention rules','It can break time travel to removed versions','It compacts active files','It updates changed rows','It creates a semantic model'],a:[0,1],e:'VACUUM deletes old unreferenced files and can remove files required for older time-travel versions.'},
-{topic:'Spark optimization',type:'single',p:'A query filters a table partitioned by Year but scans every partition. Which predicate best enables partition pruning?',o:['where Year = 2026','where year(OrderDate) = 2026 after a Python UDF','cache the table','repartition by CustomerID'],a:[0],e:'Filtering directly on the partition column enables pruning.'},
-{topic:'Spark optimization',type:'single',p:'A DataFrame is reused by five actions and is expensive to recompute. What should you consider?',o:['cache or persist the DataFrame','broadcast the 2-TB DataFrame','collect it to the driver','coalesce to one partition'],a:[0],e:'Caching helps when the same computed DataFrame is reused.'},
-{topic:'KQL',type:'single',p:'You need SQL as a separate token, excluding SQLServer and MySQL. Which operator should you use?',o:['has','contains','startswith','matches regex ".*SQL.*"'],a:[0],e:'has performs term-based matching; contains performs substring matching.'},
-{topic:'KQL',type:'multi',select:2,p:'Which two operators preserve all existing columns while adding or expanding data?',o:['extend','mv-expand','project','project-away','summarize'],a:[0,1],e:'extend adds columns and mv-expand expands dynamic arrays while retaining other columns.'},
-{topic:'Fabric architecture',type:'single',p:'Semi-structured data is written only by Spark and must be readable through Spark, T-SQL, and KQL. Where should it be stored?',o:['Lakehouse','Warehouse','Datamart','Eventstream'],a:[0],e:'A Lakehouse is the Spark-managed Delta storage choice and supports cross-engine access patterns.'},
-{topic:'Direct Lake',type:'single',p:'A 500-million-row model uses Direct Lake and report scans have degraded. You need better performance without increasing capacity cost. What should you evaluate first?',o:['V-Order','Change MD5 to SHA256','Create more views only','Increase capacity'],a:[0],e:'V-Order improves Parquet layout for Fabric analytics without requiring a larger SKU.'},
-{topic:'Pipeline',type:'order',p:'Arrange the safest incremental watermark pattern.',o:['Read the last successful watermark','Extract rows greater than the watermark','Stage and validate rows','MERGE into the target','Update the watermark after success'],a:[0,1,2,3,4],e:'The watermark must be updated only after the load and validation succeed.'},
-{topic:'Dataflow Gen2',type:'single',p:'A refresh begins failing immediately after the source database password changes. What should you do first?',o:['Update the connection credentials','Recreate the Lakehouse','Create a new workspace','Convert to a notebook'],a:[0],e:'Fix the failing authentication at the existing connection.'},
-{topic:'Eventhouse',type:'single',p:'A dashboard repeatedly computes the same hourly aggregate over billions of telemetry rows. Low latency is required. What should you create?',o:['A materialized view','A function that scans all raw data each time','A OneLake shortcut only','A larger result set'],a:[0],e:'A materialized view incrementally maintains the repeated aggregation.'},
-{topic:'Eventhouse',type:'multi',select:2,p:'Data must be retained for three years, but only the latest 14 days need hot performance. Which two policies should be configured?',o:['Retention policy for three years','Caching policy for 14 days','Dynamic masking for old rows','Spark broadcast policy','Deployment rule'],a:[0,1],e:'Retention controls lifetime; caching controls the hot-performance window.'},
-{topic:'T-SQL',type:'single',p:'Which window expression keeps only the newest source row per BusinessKey?',o:[`ROW_NUMBER() OVER(PARTITION BY BusinessKey ORDER BY ModifiedDate DESC)`,`RANK() OVER(ORDER BY BusinessKey)`,`COUNT(*) OVER(PARTITION BY ModifiedDate)`,`LAG(BusinessKey) OVER(ORDER BY ModifiedDate)`],a:[0],e:'ROW_NUMBER partitions by key and orders newest first; filter to row number 1.'},
-{topic:'PySpark',type:'dropdown',p:'Complete the code to keep the latest row per CustomerID.',code:`from pyspark.sql import Window
-from pyspark.sql.functions import [1], col
-w = Window.[2]("CustomerID").orderBy(col("ModifiedAt").desc())
-latest = df.withColumn("rn", [1]().over(w)).filter(col("rn") == [3])`,drops:[{l:'[1]',o:['row_number','rank','count','lead'],a:0},{l:'[2]',o:['partitionBy','groupBy','repartition','orderBy'],a:0},{l:'[3]',o:['1','0','-1','null'],a:0}],e:'Use row_number over a partitioned window and keep rn = 1.'},
-{topic:'PySpark',type:'single',p:'A join creates two Status columns and select("Status") is ambiguous. What is the correct fix?',o:['Alias DataFrames and qualify the selected column','Increase executor memory','Run VACUUM','Convert both inputs to CSV'],a:[0],e:'Qualifying or renaming duplicate columns resolves ambiguity.'}
-];
-let qs=[],i=0,ans={},checked={},seconds=7200;
-function shuffle(a){return a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(x=>x[1])}
-function build(){qs=[];for(let n=0;n<60;n++){let q=JSON.parse(JSON.stringify(base[n%base.length]));q.id=n+1;q.variant=Math.floor(n/base.length)+1;qs.push(q)}qs=shuffle(qs)}
-function startExam(){build();document.getElementById('start').classList.add('hidden');document.getElementById('exam').classList.remove('hidden');render();setInterval(()=>{if(seconds>0)seconds--;document.getElementById('timer').textContent=new Date(seconds*1000).toISOString().slice(11,19);if(seconds===0)submitExam()},1000)}
-function render(){const q=qs[i];document.getElementById('meta').innerHTML=`<span class="pill">${q.topic}</span><span class="pill">${q.type}</span><span class="muted">Question ${i+1} of ${qs.length}</span>`;document.getElementById('prompt').innerHTML=q.p;document.getElementById('code').innerHTML=q.code?`<pre><code>${esc(q.code)}</code></pre>`:'';const a=document.getElementById('answers');a.innerHTML='';if(q.type==='dropdown'){q.drops.forEach((d,di)=>{const row=document.createElement('div');row.className='drop-row';row.innerHTML=`<strong>${d.l}</strong><select><option value="">Select</option>${d.o.map((x,xi)=>`<option value="${xi}" ${ans[i]?.[di]==xi?'selected':''}>${esc(x)}</option>`).join('')}</select>`;row.querySelector('select').onchange=e=>{ans[i]=ans[i]||{};ans[i][di]=Number(e.target.value);paintNav()};a.appendChild(row)})}else if(q.type==='order'){let order=ans[i]||shuffle(q.o.map((_,x)=>x));ans[i]=order;order.forEach((oi,pos)=>{let d=document.createElement('div');d.className='order-item';d.innerHTML=`<span>${pos+1}. ${esc(q.o[oi])}</span><span><button onclick="swap(${pos},-1)">↑</button> <button onclick="swap(${pos},1)">↓</button></span>`;a.appendChild(d)})}else{q.o.forEach((x,oi)=>{let l=document.createElement('label');l.className='option '+((ans[i]||[]).includes(oi)?'selected':'');l.innerHTML=`<input type="${q.type==='multi'?'checkbox':'radio'}" name="q" ${((ans[i]||[]).includes(oi))?'checked':''}> ${esc(x)}`;l.onclick=()=>choose(oi,q.type);a.appendChild(l)})}document.getElementById('feedback').innerHTML=checked[i]?feedback(q):'';paintNav();document.getElementById('progress').textContent=`Answered ${Object.keys(ans).length} of ${qs.length}`}
-function choose(oi,t){if(t==='multi'){let x=ans[i]||[];ans[i]=x.includes(oi)?x.filter(v=>v!==oi):[...x,oi]}else ans[i]=[oi];render()}
-function swap(p,d){let x=ans[i],t=p+d;if(t<0||t>=x.length)return;[x[p],x[t]]=[x[t],x[p]];render()}
-function correct(q){if(q.type==='dropdown')return q.drops.every((d,di)=>ans[i]?.[di]===d.a);let x=ans[i]||[];return JSON.stringify([...x].sort())===JSON.stringify([...q.a].sort())}
-function check(){checked[i]=true;render()}
-function feedback(q){return `<div class="result ${correct(q)?'good':'bad'}"><strong>${correct(q)?'Correct':'Incorrect'}</strong><br>${q.e}</div>`}
-function move(d){i=Math.max(0,Math.min(qs.length-1,i+d));render()}
-function paintNav(){let n=document.getElementById('nav');n.innerHTML='';qs.forEach((_,x)=>{let b=document.createElement('button');b.textContent=x+1;b.className=(ans[x]?'done ':'')+(x===i?'now':'');b.onclick=()=>{i=x;render()};n.appendChild(b)})}
-function submitExam(){if(!confirm('Submit the exam now?'))return;let score=qs.reduce((s,q,idx)=>{let old=i;i=idx;let c=correct(q);i=old;return s+(c?1:0)},0);document.getElementById('exam').classList.add('hidden');let r=document.getElementById('results');r.classList.remove('hidden');r.innerHTML=`<h1>${score}/${qs.length}</h1><h2>${Math.round(score/qs.length*100)}%</h2><p>${score/qs.length>=.7?'Pass-level result. Continue reviewing weak code patterns.':'Below the 70% practice target. Focus on PySpark, KQL, MERGE, Delta maintenance and optimization.'}</p><button class="btn primary" onclick="location.reload()">New attempt</button>`}
-function esc(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
-</script>
-</body></html>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="DP-700 simulator home">
+      <span class="brand-mark">D7</span>
+      <span><strong>DP-700 Unique Expert Simulator</strong><small>190 distinct expert questions</small></span>
+    </a>
+    <div class="top-actions">
+      <span id="unseenBadge" class="status-badge">Unseen: 190</span>
+      <button id="themeBtn" class="icon-btn" type="button" aria-label="Toggle dark mode">☀️</button>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section id="landing" class="screen active">
+      <div class="hero card">
+        <div class="hero-copy">
+          <span class="eyebrow">No template repetition</span>
+          <h1>Hard coding practice without recycled questions.</h1>
+          <p class="lead">Every question has a unique ID, unique prompt, and unique code or scenario. The simulator remembers previously served questions and does not show them again until you explicitly reset question history.</p>
+          <div class="metrics">
+            <div><strong>190</strong><span>unique questions</span></div>
+            <div><strong>5</strong><span>interaction types</span></div>
+            <div><strong>0</strong><span>automatic repeats</span></div>
+          </div>
+        </div>
+        <div class="hero-panel">
+          <h2>Build an exam</h2>
+          <label>Question count
+            <select id="questionCount">
+              <option value="20">20 questions</option>
+              <option value="40">40 questions</option>
+              <option value="60" selected>60 questions</option>
+            </select>
+          </label>
+          <label>Question pool
+            <select id="poolSelect">
+              <option value="all">All expert topics</option>
+              <option value="coding">Coding-heavy only</option>
+              <option value="PySpark">PySpark</option>
+              <option value="KQL">KQL and Eventhouse</option>
+              <option value="T-SQL">T-SQL and Warehouse</option>
+              <option value="Fabric">Fabric, Delta, pipelines, security</option>
+            </select>
+          </label>
+          <label>Duration
+            <select id="durationSelect">
+              <option value="45">45 minutes</option>
+              <option value="75">75 minutes</option>
+              <option value="120" selected>120 minutes</option>
+              <option value="0">Untimed practice</option>
+            </select>
+          </label>
+          <label class="toggle-row"><input id="practiceMode" type="checkbox"> Show Check Answer during the exam</label>
+          <button id="startBtn" class="btn primary wide">Start unseen-question exam</button>
+          <button id="resetHistoryBtn" class="btn ghost wide">Reset question history</button>
+          <p id="landingMessage" class="form-message" aria-live="polite"></p>
+        </div>
+      </div>
+
+      <div class="feature-grid">
+        <article class="card"><h3>Strict no-repeat engine</h3><p>Questions are reserved when an exam starts. Abandoning or refreshing the attempt still prevents those questions from being served again.</p></article>
+        <article class="card"><h3>Real interaction formats</h3><p>Single choice, select-two, code dropdown completion, sequence ordering, and item matching.</p></article>
+        <article class="card"><h3>Persistent dark mode</h3><p>The theme, used-question history, exam state, and results remain stored in your browser.</p></article>
+      </div>
+
+      <section class="card history-card">
+        <div class="section-heading"><div><span class="eyebrow">Local history</span><h2>Previous attempts</h2></div><button id="clearAttemptsBtn" class="btn ghost">Clear results</button></div>
+        <div id="historyList" class="history-list"></div>
+      </section>
+    </section>
+
+    <section id="exam" class="screen">
+      <div class="exam-layout">
+        <article class="card question-card">
+          <div class="question-head">
+            <div>
+              <div id="questionMeta" class="meta-row"></div>
+              <p id="questionPosition" class="muted"></p>
+            </div>
+            <div id="timer" class="timer">02:00:00</div>
+          </div>
+          <h2 id="questionPrompt"></h2>
+          <pre id="codeBlock" class="code-block hidden"><code id="questionCode"></code></pre>
+          <p id="questionInstruction" class="instruction"></p>
+          <div id="answerArea"></div>
+          <div id="answerFeedback" class="feedback hidden"></div>
+          <div class="question-actions">
+            <div class="action-group">
+              <button id="previousBtn" class="btn ghost">Previous</button>
+              <button id="markBtn" class="btn ghost">Mark for review</button>
+            </div>
+            <div class="action-group">
+              <button id="checkBtn" class="btn ghost hidden">Check answer</button>
+              <button id="nextBtn" class="btn primary">Next</button>
+            </div>
+          </div>
+        </article>
+
+        <aside class="card sidebar">
+          <div class="sidebar-title"><strong>Exam progress</strong><span id="answeredText">0 / 60</span></div>
+          <div class="progress-track"><div id="progressFill" class="progress-fill"></div></div>
+          <div class="legend"><span><i class="answered-dot"></i>Answered</span><span><i class="marked-dot"></i>Marked</span></div>
+          <div id="navigator" class="navigator"></div>
+          <button id="submitBtn" class="btn danger wide">Submit exam</button>
+        </aside>
+      </div>
+    </section>
+
+    <section id="results" class="screen">
+      <div class="card results-card">
+        <span class="eyebrow">Attempt complete</span>
+        <h1 id="scoreHeading">0%</h1>
+        <p id="scoreSummary" class="lead"></p>
+        <div id="resultMetrics" class="result-metrics"></div>
+        <div class="result-actions">
+          <button id="reviewBtn" class="btn primary">Review all questions</button>
+          <button id="homeBtn" class="btn ghost">Return home</button>
+        </div>
+      </div>
+      <div id="topicResults" class="topic-results"></div>
+    </section>
+
+    <section id="review" class="screen">
+      <div class="section-heading review-heading">
+        <div><span class="eyebrow">Detailed review</span><h1>Question review</h1></div>
+        <button id="reviewHomeBtn" class="btn primary">Return home</button>
+      </div>
+      <div id="reviewList" class="review-list"></div>
+    </section>
+  </main>
+
+  <dialog id="confirmDialog" class="dialog">
+    <form method="dialog">
+      <h2 id="dialogTitle">Confirm</h2>
+      <p id="dialogText"></p>
+      <div class="dialog-actions"><button value="cancel" class="btn ghost">Cancel</button><button id="dialogConfirm" value="confirm" class="btn danger">Confirm</button></div>
+    </form>
+  </dialog>
+
+  <script src="js/questions.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
